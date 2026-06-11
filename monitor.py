@@ -4,34 +4,26 @@ import requests
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Obtener precios desde Binance
-btc = requests.get(
-    "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
-).json()
+print("Iniciando prueba Binance")
 
-eth = requests.get(
-    "https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT"
-).json()
+try:
+    btc = requests.get(
+        "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+        timeout=10
+    )
 
-btc_price = float(btc["price"])
-eth_price = float(eth["price"])
+    print("Status Binance:", btc.status_code)
+    print("Respuesta Binance:", btc.text)
 
-mensaje = (
-    f"📊 Monitor Cripto\n\n"
-    f"₿ BTC: ${btc_price:,.2f}\n"
-    f"♦ ETH: ${eth_price:,.2f}\n\n"
-    f"✅ Conexión Binance OK"
-)
+except Exception as e:
+    print("ERROR:", str(e))
 
 url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
-respuesta = requests.post(
+requests.post(
     url,
     data={
         "chat_id": CHAT_ID,
-        "text": mensaje
+        "text": "Prueba Binance ejecutada"
     }
 )
-
-print("STATUS:", respuesta.status_code)
-print("RESPUESTA:", respuesta.text)
