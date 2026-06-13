@@ -6,15 +6,26 @@ CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 print("Iniciando monitor...")
 
-btc = requests.get(
-    "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
-    timeout=10
-).json()
+url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
 
-eth = requests.get(
-    "https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT",
-    timeout=10
-).json()
+datos = requests.get(url, timeout=10).json()
 
-print("BTC:", btc)
-print("ETH:", eth)
+btc_price = datos["bitcoin"]["usd"]
+eth_price = datos["ethereum"]["usd"]
+
+mensaje = (
+    f"📊 Monitor Cripto\n\n"
+    f"₿ BTC: ${btc_price:,.2f}\n"
+    f"♦ ETH: ${eth_price:,.2f}"
+)
+
+respuesta = requests.post(
+    f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+    data={
+        "chat_id": CHAT_ID,
+        "text": mensaje
+    }
+)
+
+print("STATUS:", respuesta.status_code)
+print("RESPUESTA:", respuesta.text)
