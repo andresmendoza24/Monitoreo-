@@ -7,8 +7,9 @@ CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 print("Iniciando monitor...")
 
-# Obtener precios actuales
+# Obtener precios actuales desde CoinGecko
 url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
+
 datos = requests.get(url, timeout=10).json()
 
 btc_actual = datos["bitcoin"]["usd"]
@@ -48,8 +49,26 @@ else:
         f"Variación: {eth_variacion:+.2f}%"
     )
 
-# Enviar mensaje
-requests.post(
+    # ALERTA BTC
+    if abs(btc_variacion) >= 5:
+
+        mensaje += (
+            f"\n\n🚨 ALERTA BTC 🚨\n\n"
+            f"Movimiento importante detectado.\n"
+            f"Variación: {btc_variacion:+.2f}% en 24 horas."
+        )
+
+    # ALERTA ETH
+    if abs(eth_variacion) >= 5:
+
+        mensaje += (
+            f"\n\n🚨 ALERTA ETH 🚨\n\n"
+            f"Movimiento importante detectado.\n"
+            f"Variación: {eth_variacion:+.2f}% en 24 horas."
+        )
+
+# Enviar mensaje a Telegram
+respuesta = requests.post(
     f"https://api.telegram.org/bot{TOKEN}/sendMessage",
     data={
         "chat_id": CHAT_ID,
@@ -57,7 +76,10 @@ requests.post(
     }
 )
 
-# Actualizar precios para mañana
+print("STATUS:", respuesta.status_code)
+print("RESPUESTA:", respuesta.text)
+
+# Actualizar precios para la siguiente ejecución
 precios["bitcoin"] = btc_actual
 precios["ethereum"] = eth_actual
 
