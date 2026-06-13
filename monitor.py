@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -6,20 +7,49 @@ CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 print("Iniciando monitor...")
 
+# Obtener precios actuales
 url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
-
 datos = requests.get(url, timeout=10).json()
 
-btc_price = datos["bitcoin"]["usd"]
-eth_price = datos["ethereum"]["usd"]
+btc_actual = datos["bitcoin"]["usd"]
+eth_actual = datos["ethereum"]["usd"]
 
-mensaje = (
-    f"📊 Monitor Cripto\n\n"
-    f"₿ BTC: ${btc_price:,.2f}\n"
-    f"♦ ETH: ${eth_price:,.2f}"
-)
+# Leer precios anteriores
+with open("precios.json", "r") as archivo:
+    precios = json.load(archivo)
 
-respuesta = requests.post(
+btc_anterior = precios["bitcoin"]
+eth_anterior = precios["ethereum"]
+
+# Primera ejecución
+if btc_anterior == 0 and eth_anterior == 0:
+
+    mensaje = (
+        f"📊 Monitor inicializado\n\n"
+        f"₿ BTC: ${btc_actual:,.2f}\n"
+        f"♦ ETH: ${eth_actual:,.2f}\n\n"
+        f"✅ A partir de mañana se compararán los precios."
+    )
+
+else:
+
+    btc_variacion = ((btc_actual - btc_anterior) / btc_anterior) * 100
+    eth_variacion = ((eth_actual - eth_anterior) / eth_anterior) * 100
+
+    mensaje = (
+        f"📊 Resumen Diario\n\n"
+        f"₿ BTC\n"
+        f"Ayer: ${btc_anterior:,.2f}\n"
+        f"Hoy: ${btc_actual:,.2f}\n"
+        f"Variación: {btc_variacion:+.2f}%\n\n"
+        f"♦ ETH\n"
+        f"Ayer: ${eth_anterior:,.2f}\n"
+        f"Hoy: ${eth_actual:,.2f}\n"
+        f"Variación: {eth_variacion:+.2f}%"
+    )
+
+# Enviar mensaje
+requests.post(
     f"https://api.telegram.org/bot{TOKEN}/sendMessage",
     data={
         "chat_id": CHAT_ID,
@@ -27,5 +57,11 @@ respuesta = requests.post(
     }
 )
 
-print("STATUS:", respuesta.status_code)
-print("RESPUESTA:", respuesta.text)
+# Actualizar precios para mañana
+precios["bitcoin"] = btc_actual
+precios["ethereum"] = eth_actual
+
+with open("precios.json", "w") as archivo:
+    json.dump(precios, archivo, indent=4)
+
+print("Proceso finalizado.")
