@@ -1,4 +1,8 @@
+import os
 import requests
+
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 print("Iniciando monitor...")
 
@@ -14,4 +18,3 @@ eth = requests.get(
 
 print("BTC:", btc)
 print("ETH:", eth)
-
