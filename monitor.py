@@ -95,11 +95,33 @@ with open("historial.json", "w") as archivo:
     json.dump(historial, archivo, indent=4)
 
 # Actualizar precios para la siguiente ejecución
-
 precios["bitcoin"] = btc_actual
 precios["ethereum"] = eth_actual
 
 with open("precios.json", "w") as archivo:
     json.dump(precios, archivo, indent=4)
 
+# ==========================
+# GUARDAR HISTORIAL
+# ==========================
+
+from datetime import datetime
+
+with open("historial.json", "r") as archivo:
+    historial = json.load(archivo)
+
+historial.append({
+    "fecha": datetime.now().strftime("%Y-%m-%d"),
+    "btc": btc_actual,
+    "eth": eth_actual
+})
+
+# Mantener máximo 30 registros
+if len(historial) > 30:
+    historial = historial[-30:]
+
+with open("historial.json", "w") as archivo:
+    json.dump(historial, archivo, indent=4)
+
+print("Historial actualizado.")
 print("Proceso finalizado.")
