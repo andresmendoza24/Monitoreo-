@@ -79,7 +79,23 @@ respuesta = requests.post(
 print("STATUS:", respuesta.status_code)
 print("RESPUESTA:", respuesta.text)
 
+# Guardar histórico
+
+with open("historial.json", "r") as archivo:
+    historial = json.load(archivo)
+
+historial.append(
+    {
+        "btc": btc_actual,
+        "eth": eth_actual
+    }
+)
+
+with open("historial.json", "w") as archivo:
+    json.dump(historial, archivo, indent=4)
+
 # Actualizar precios para la siguiente ejecución
+
 precios["bitcoin"] = btc_actual
 precios["ethereum"] = eth_actual
 
