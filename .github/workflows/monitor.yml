@@ -33,11 +33,12 @@ jobs:
         run: |
           python monitor.py
 
-      - name: Guardar precios actualizados
+      - name: Guardar archivos actualizados
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git add precios.json
-          git diff --staged --quiet || git commit -m "Actualizar precios"
+          git add precios.json historial.json
+
+          git diff --staged --quiet || git commit -m "Actualizar datos"
           git push
